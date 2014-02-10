@@ -1,0 +1,171 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>pixi.js example 12 Spine</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+    </style>
+
+
+    <script src="pixi.dev.js"></script>
+</head>
+<body>
+    <script>
+
+        var RENDERER_WIDTH = 1024,
+            RENDERER_HEIGHT = 640,
+            BACKGROUND_WIDTH,
+            BACKGROUND_HEIGHT,
+            FOREGROUND_WIDTH,
+            FOREGROUND_HEIGHT,
+            ARMADILLO_WIDTH,
+            ARMADILLO_HEIGHT,
+            INCLINATION = degreesToRadians(10),
+            STEP = 10,
+            position = 0,
+            stage,
+            renderer,
+            background,
+            background2,
+            foreground,
+            foreground2,
+            armadillo;
+
+        // Create a new loader
+        loader = new PIXI.AssetLoader(["iP4_BGtile.jpg", "iP4_ground.png", "armadillo.png"]);
+
+        // Set callback
+        loader.onComplete = onAssetsLoaded;
+
+        // Begin load
+        loader.load();
+
+        // Create an new instance of a pixi stage
+        stage = new PIXI.Stage(0xFFFFFF, true);
+
+        // Create a renderer instance
+        renderer = new PIXI.autoDetectRenderer(RENDERER_WIDTH, RENDERER_HEIGHT);
+
+        // Set the canvas width and height to fill the screen
+        renderer.view.style.display = "block";
+        renderer.view.style.width = "100%"
+        renderer.view.style.height = "100%"
+
+        // Add render view to DOM
+        document.body.appendChild(renderer.view);
+
+        function degreesToRadians (degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        function initializeBackground () {
+            BACKGROUND_WIDTH = background.width;
+            BACKGROUND_HEIGHT = background.height;
+
+            background.position.x = 0;
+            background2.position.x = BACKGROUND_WIDTH;
+        }
+
+        function initializeForeground () {
+            FOREGROUND_WIDTH = foreground.width;
+            FOREGROUND_HEIGHT = foreground.height;
+
+            foreground.position.x = 0;
+            foreground2.position.x = (FOREGROUND_WIDTH * 2) - (FOREGROUND_WIDTH / Math.cos(INCLINATION));
+            foreground.position.y = foreground2.position.y = RENDERER_HEIGHT - 300;
+            foreground2.position.y += FOREGROUND_WIDTH * Math.sin(INCLINATION);
+            foreground.rotation = foreground2.rotation = INCLINATION;
+        }
+
+        function initializeArmadillo () {
+            armadillo.scale.x = armadillo.scale.y = 0.3;
+
+            ARMADILLO_WIDTH = armadillo.width;
+            ARMADILLO_HEIGHT = armadillo.height;
+
+            armadillo.position.x = RENDERER_WIDTH / 3;
+            armadillo.position.y =  400;
+            armadillo.anchor.x = 0.5;
+            armadillo.anchor.y = 0.5;
+        }
+
+        function updateBackground (step) {
+            background.position.x -= (step * 0.6);
+            if (background.position.x < -BACKGROUND_WIDTH) {
+                background.position.x += BACKGROUND_WIDTH * 2;
+            }
+
+            background2.position.x -= (step * 0.6);
+            if (background2.position.x < -BACKGROUND_WIDTH) {
+                background2.position.x += BACKGROUND_WIDTH * 2;
+            }
+        }
+
+        function updateForeground (step) {
+            foreground.position.x -= step;
+            foreground.position.y -= step * Math.tan(INCLINATION);
+            if (foreground.position.x < -FOREGROUND_WIDTH) {
+                var doubleWidth = FOREGROUND_WIDTH * 2;
+                foreground.position.x += (doubleWidth * 2) - (doubleWidth / Math.cos(INCLINATION));
+                foreground.position.y += doubleWidth * Math.sin(INCLINATION);
+            }
+
+            foreground2.position.x -= step;
+            foreground2.position.y -= step * Math.tan(INCLINATION);
+            if (foreground2.position.x < -FOREGROUND_WIDTH) {
+                var doubleWidth = FOREGROUND_WIDTH * 2;
+                foreground2.position.x += (doubleWidth * 2) - (doubleWidth / Math.cos(INCLINATION));
+                foreground2.position.y += doubleWidth * Math.sin(INCLINATION);
+            }
+        }
+
+        function updateArmadillo () {
+            armadillo.rotation += 0.1;
+        }
+
+        function onAssetsLoaded () {
+            background = PIXI.Sprite.fromImage("iP4_BGtile.jpg");
+            background2 = PIXI.Sprite.fromImage("iP4_BGtile.jpg");
+            initializeBackground();
+
+            foreground = PIXI.Sprite.fromImage("iP4_ground.png");
+            foreground2 = PIXI.Sprite.fromImage("iP4_ground.png");
+            initializeForeground();
+
+            armadillo = PIXI.Sprite.fromImage("armadillo.png");
+            initializeArmadillo();
+
+            stage.addChild(background);
+            stage.addChild(background2);
+            stage.addChild(foreground);
+            stage.addChild(foreground2);
+            stage.addChild(armadillo);
+
+            // stage.mousedown = stage.touchstart = function () {
+            //     ...
+            // }
+
+            requestAnimFrame(animate);
+        }
+
+        function animate () {
+            position += STEP;
+
+            updateBackground(STEP);
+            updateForeground(STEP);
+            updateArmadillo()
+
+            requestAnimFrame(animate);
+
+            renderer.render(stage);
+        }
+
+    </script>
+
+    </body>
+</html>
