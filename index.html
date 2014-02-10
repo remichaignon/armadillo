@@ -25,6 +25,8 @@
             FOREGROUND_HEIGHT,
             ARMADILLO_WIDTH,
             ARMADILLO_HEIGHT,
+            JUMP_MULTIPLIER = 15,
+            DASH_MULTIPLIER = 30,
             INCLINATION = degreesToRadians(10),
             STEP = 10,
             position = 0,
@@ -36,7 +38,9 @@
             foreground2,
             armadillo,
             jump = 0,
-            dash = 0;
+            dash = 0,
+            jumpButton,
+            dashButton;
 
         // Create a new loader
         loader = new PIXI.AssetLoader(["iP4_BGtile.jpg", "iP4_ground.png", "armadillo.png"]);
@@ -130,7 +134,7 @@
             armadillo.rotation += 0.1;
 
             if (jump) {
-                armadillo.position.y += 10 * Math.cos(jump)
+                armadillo.position.y += JUMP_MULTIPLIER * Math.cos(jump)
                 jump -= 0.1;
 
                 if (jump < 0) {
@@ -142,7 +146,7 @@
             }
 
             if (dash) {
-                armadillo.position.x -= 30 * Math.cos(dash)
+                armadillo.position.x -= DASH_MULTIPLIER * Math.cos(dash)
                 dash -= 0.1;
 
                 if (dash < 0) {
@@ -166,16 +170,31 @@
             armadillo = PIXI.Sprite.fromImage("armadillo.png");
             initializeArmadillo();
 
+            jumpButton = new PIXI.Text("JUMP", {font: "35px Snippet", fill: "white", align: "left"});
+            jumpButton.position.x = 20;
+            jumpButton.position.y = 20;
+            jumpButton.setInteractive(true);
+
+            dashButton = new PIXI.Text("DASH", {font: "35px Snippet", fill: "white", align: "left"});
+            dashButton.position.x = RENDERER_WIDTH - 20 - jumpButton.width;
+            dashButton.position.y = 20;
+            dashButton.setInteractive(true);
+
             stage.addChild(background);
             stage.addChild(background2);
             stage.addChild(foreground);
             stage.addChild(foreground2);
             stage.addChild(armadillo);
+            stage.addChild(jumpButton);
+            stage.addChild(dashButton);
 
-            stage.mousedown = stage.touchstart = function () {
+            jumpButton.mousedown = jumpButton.touchstart = function () {
                 if (!jump) {
-                    // jump = Math.PI;
+                    jump = Math.PI;
                 }
+            }
+
+            dashButton.mousedown = dashButton.touchstart = function () {
                 if (!dash) {
                     dash = Math.PI;
                 }
