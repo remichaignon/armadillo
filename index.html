@@ -35,7 +35,8 @@
             foreground,
             foreground2,
             armadillo,
-            jump = 0;
+            jump = 0,
+            dash = 0;
 
         // Create a new loader
         loader = new PIXI.AssetLoader(["iP4_BGtile.jpg", "iP4_ground.png", "armadillo.png"]);
@@ -139,6 +140,18 @@
             else {
                 armadillo.position.y = 400;
             }
+
+            if (dash) {
+                armadillo.position.x -= 30 * Math.cos(dash)
+                dash -= 0.1;
+
+                if (dash < 0) {
+                    dash = 0;
+                }
+            }
+            else {
+                armadillo.position.x = RENDERER_WIDTH / 3;
+            }
         }
 
         function onAssetsLoaded () {
@@ -161,7 +174,10 @@
 
             stage.mousedown = stage.touchstart = function () {
                 if (!jump) {
-                    jump = Math.PI;
+                    // jump = Math.PI;
+                }
+                if (!dash) {
+                    dash = Math.PI;
                 }
             }
 
