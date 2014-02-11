@@ -139,22 +139,21 @@
 
                 if (jump < 0) {
                     jump = 0;
+                    armadillo.position.y = 400;
                 }
-            }
-            else {
-                armadillo.position.y = 400;
             }
 
             if (dash) {
-                armadillo.position.x -= DASH_MULTIPLIER * Math.cos(dash)
+                var dashLength = DASH_MULTIPLIER * Math.cos(dash);
+                armadillo.position.x -= dashLength * Math.cos(INCLINATION);
+                armadillo.position.y -= dashLength * Math.sin(INCLINATION);
                 dash -= 0.1;
 
                 if (dash < 0) {
                     dash = 0;
+                    armadillo.position.x = RENDERER_WIDTH / 3;
+                    armadillo.position.y = 400;
                 }
-            }
-            else {
-                armadillo.position.x = RENDERER_WIDTH / 3;
             }
         }
 
