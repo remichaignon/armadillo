@@ -25,6 +25,8 @@
             FOREGROUND_HEIGHT,
             ARMADILLO_WIDTH,
             ARMADILLO_HEIGHT,
+            COYOTE_WIDTH,
+            COYOTE_HEIGHT,
             JUMP_MULTIPLIER = 15,
             DASH_MULTIPLIER = 30,
             INCLINATION = degreesToRadians(10),
@@ -37,10 +39,15 @@
             foreground,
             foreground2,
             armadillo,
+            coyote,
             jump = 0,
             dash = 0,
             jumpButton,
             dashButton;
+
+
+        // INIT ///////////////////////////////////////////////////////////////
+
 
         // Create a new loader
         loader = new PIXI.AssetLoader(["iP4_BGtile.jpg", "iP4_ground.png", "armadillo.png"]);
@@ -65,9 +72,17 @@
         // Add render view to DOM
         document.body.appendChild(renderer.view);
 
+
+        // UTILS //////////////////////////////////////////////////////////////
+
+
         function degreesToRadians (degrees) {
             return degrees * Math.PI / 180;
         }
+
+
+        // SETUP //////////////////////////////////////////////////////////////
+
 
         function initializeBackground () {
             BACKGROUND_WIDTH = background.width;
@@ -88,6 +103,21 @@
             foreground.rotation = foreground2.rotation = INCLINATION;
         }
 
+        function setupStage () {
+            background = PIXI.Sprite.fromImage("iP4_BGtile.jpg");
+            background2 = PIXI.Sprite.fromImage("iP4_BGtile.jpg");
+            initializeBackground();
+
+            foreground = PIXI.Sprite.fromImage("iP4_ground.png");
+            foreground2 = PIXI.Sprite.fromImage("iP4_ground.png");
+            initializeForeground();
+
+            stage.addChild(background);
+            stage.addChild(background2);
+            stage.addChild(foreground);
+            stage.addChild(foreground2);
+        }
+
         function initializeArmadillo () {
             armadillo.scale.x = armadillo.scale.y = 0.3;
 
@@ -99,6 +129,81 @@
             armadillo.anchor.x = 0.5;
             armadillo.anchor.y = 0.5;
         }
+
+        function setupArmadillo () {
+            armadillo = PIXI.Sprite.fromImage("armadillo.png");
+            initializeArmadillo();
+
+            stage.addChild(armadillo);
+        }
+
+        function initializeCoyote () {
+            coyote.scale.x = coyote.scale.y = 0.4;
+
+            COYOTE_WIDTH = coyote.width;
+            COYOTE_HEIGHT = coyote.height;
+
+            coyote.position.x = 2 * RENDERER_WIDTH / 3;
+            coyote.position.y = 400;
+        }
+
+        function setupCoyote () {
+            coyote = PIXI.Sprite.fromImage("coyote.png");
+            initializeArmadillo();
+
+            stage.addChild(coyote);
+        }
+
+        function setArmadilloAsJumping () {
+            if (!jump) {
+                jump = Math.PI;
+            }
+        }
+        function setArmadilloAsDashing () {
+            if (!dash) {
+                dash = Math.PI;
+            }
+        }
+
+        function setupControls () {
+            jumpButton = new PIXI.Text("JUMP", {font: "35px Snippet", fill: "white", align: "left"});
+            jumpButton.position.x = 20;
+            jumpButton.position.y = 20;
+            jumpButton.setInteractive(true);
+
+            dashButton = new PIXI.Text("DASH", {font: "35px Snippet", fill: "white", align: "left"});
+            dashButton.position.x = RENDERER_WIDTH - 20 - jumpButton.width;
+            dashButton.position.y = 20;
+            dashButton.setInteractive(true);
+
+            stage.addChild(jumpButton);
+            stage.addChild(dashButton);
+
+            jumpButton.mousedown = jumpButton.touchstart = function () {
+                setArmadilloAsJumping();
+            }
+
+            dashButton.mousedown = dashButton.touchstart = function () {
+                setArmadilloAsDashing();
+            }
+        }
+
+        function onAssetsLoaded () {
+            setupStage();
+            setupArmadillo();
+            setupCoyote();
+            setupControls();
+
+            requestAnimFrame(animate);
+        }
+
+
+        // UPDATE /////////////////////////////////////////////////////////////
+
+
+        function detectCollisions () {}
+
+        function moveAlongSlope (step) {}
 
         function updateBackground (step) {
             background.position.x -= (step * 0.6);
@@ -130,79 +235,44 @@
             }
         }
 
+        function updateJumpingArmadillo () {
+            armadillo.position.y += JUMP_MULTIPLIER * Math.cos(jump)
+            jump -= 0.1;
+
+            if (jump < 0) {
+                jump = 0;
+                armadillo.position.y = 400;
+            }
+        }
+
+        function updateDashingArmadillo () {
+            var dashLength = DASH_MULTIPLIER * Math.cos(dash);
+            armadillo.position.x -= dashLength * Math.cos(INCLINATION);
+            armadillo.position.y -= dashLength * Math.sin(INCLINATION);
+            dash -= 0.1;
+
+            if (dash < 0) {
+                dash = 0;
+                armadillo.position.x = RENDERER_WIDTH / 3;
+                armadillo.position.y = 400;
+            }
+        }
+
         function updateArmadillo () {
             armadillo.rotation += 0.1;
 
             if (jump) {
-                armadillo.position.y += JUMP_MULTIPLIER * Math.cos(jump)
-                jump -= 0.1;
-
-                if (jump < 0) {
-                    jump = 0;
-                    armadillo.position.y = 400;
-                }
+                updateJumpingArmadillo();
             }
 
             if (dash) {
-                var dashLength = DASH_MULTIPLIER * Math.cos(dash);
-                armadillo.position.x -= dashLength * Math.cos(INCLINATION);
-                armadillo.position.y -= dashLength * Math.sin(INCLINATION);
-                dash -= 0.1;
-
-                if (dash < 0) {
-                    dash = 0;
-                    armadillo.position.x = RENDERER_WIDTH / 3;
-                    armadillo.position.y = 400;
-                }
+                updateDashingArmadillo();
             }
-        }
-
-        function onAssetsLoaded () {
-            background = PIXI.Sprite.fromImage("iP4_BGtile.jpg");
-            background2 = PIXI.Sprite.fromImage("iP4_BGtile.jpg");
-            initializeBackground();
-
-            foreground = PIXI.Sprite.fromImage("iP4_ground.png");
-            foreground2 = PIXI.Sprite.fromImage("iP4_ground.png");
-            initializeForeground();
-
-            armadillo = PIXI.Sprite.fromImage("armadillo.png");
-            initializeArmadillo();
-
-            jumpButton = new PIXI.Text("JUMP", {font: "35px Snippet", fill: "white", align: "left"});
-            jumpButton.position.x = 20;
-            jumpButton.position.y = 20;
-            jumpButton.setInteractive(true);
-
-            dashButton = new PIXI.Text("DASH", {font: "35px Snippet", fill: "white", align: "left"});
-            dashButton.position.x = RENDERER_WIDTH - 20 - jumpButton.width;
-            dashButton.position.y = 20;
-            dashButton.setInteractive(true);
-
-            stage.addChild(background);
-            stage.addChild(background2);
-            stage.addChild(foreground);
-            stage.addChild(foreground2);
-            stage.addChild(armadillo);
-            stage.addChild(jumpButton);
-            stage.addChild(dashButton);
-
-            jumpButton.mousedown = jumpButton.touchstart = function () {
-                if (!jump) {
-                    jump = Math.PI;
-                }
-            }
-
-            dashButton.mousedown = dashButton.touchstart = function () {
-                if (!dash) {
-                    dash = Math.PI;
-                }
-            }
-
-            requestAnimFrame(animate);
         }
 
         function animate () {
+            detectCollisions();
+
             position += STEP;
 
             updateBackground(STEP);
@@ -210,7 +280,6 @@
             updateArmadillo()
 
             requestAnimFrame(animate);
-
             renderer.render(stage);
         }
 
